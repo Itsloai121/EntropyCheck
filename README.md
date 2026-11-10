@@ -167,13 +167,14 @@ The 0–100 score is a transparent classroom heuristic. It awards points for len
 
 ## 📁 Project structure
 
-```text
-EntropyCheck/
-├── zynx_password_checker.py   # Analysis logic, GUI, TUI, and built-in tests
-├── requirements.txt           # Rich terminal-interface dependency
-├── README.md                  # Setup, usage, and methodology
-├── bugs to fix.txt            # Original audit request/reference
-└── design style.txt            # Original GUI design reference
+```Zynx/
+│
+├── app.py
+├── zynx_password_checker.py
+├── requirements.txt
+│
+└── templates/
+    └── index.html 
 ```
 
 ZPC intentionally keeps the application in one Python file. The GUI and TUI call the same analysis functions, so the two interfaces use the same scoring and detection logic.

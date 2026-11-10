@@ -1,37 +1,43 @@
-# 🔐 Password Lab — Password Strength Checker & Entropy Calculator
+# 🟣 ZPC — Zynx Password Checker
 
-A local Python terminal application for learning how password length, character variety, common-password checks, and simple patterns affect a password-strength assessment.
+A local-only password strength checker with two interfaces: a custom dark-purple desktop GUI and the original Rich terminal interface (TUI). ZPC evaluates password length, character variety, common-password words, simple patterns, a structural entropy estimate, and illustrative crack-time scenarios.
 
-> **Important:** This is an educational checker, not a password-cracking tool, a breach-database checker, or a production password policy engine. Its entropy and crack-time values are estimates, not guarantees.
+> **Use a test password, not a password you currently use.** ZPC is an educational checker. It is not a breach checker, password-cracking tool, or production security policy engine. Entropy and crack-time values are estimates, not guarantees.
 
 ## ✨ Features
 
-- **Hidden password entry:** Uses Python's `getpass` so the password is not echoed on screen. The program deliberately refuses to fall back to visible password entry.
-- **Length analysis:** Counts the exact characters entered, including spaces. Python counts Unicode code points.
-- **Character-class detection:** Checks lowercase letters, uppercase letters, digits, symbols, and whitespace.
-- **Common-password and dictionary checks:** Uses a small local demonstration list and a few predictable leetspeak substitutions.
-- **Pattern checks:** Looks for repeated character runs, common keyboard rows, and simple ascending/descending sequences.
-- **Structural entropy:** Calculates the upper-bound approximation `length × log₂(character_pool_size)`.
-- **Crack-time scenarios:** Shows illustrative estimates for a rate-limited online scenario and a fast offline-hash scenario.
-- **Recommendations:** Gives feedback based on length, dictionary matches, and detected patterns.
-- **Built-in tests:** Includes deterministic unit tests that can be run from the command line.
+- **GUI and TUI modes:** Choose the desktop GUI or terminal interface when the app starts. You can also launch either mode directly.
+- **ZPC visual design:** Black-dominant background, purple secondary gradient, white accents, layered shadows, and floating controls.
+- **Animated analysis screen:** A smooth progress animation with changing, fading status messages.
+- **Organized report:** Score, grade, length, entropy, character pool, detected character categories, crack-time examples, findings, recommendations, and limitations.
+- **Hidden password input:** Passwords are masked in the GUI and entered with `getpass` in the TUI.
+- **Local processing:** No network requests, telemetry, or password-file storage.
+- **Unicode-aware measurements:** Counts Python Unicode code points and labels its character-pool contribution as approximate.
+- **Built-in tests:** Run deterministic checks for analysis and input-validation edge cases.
 
 ## 🧰 Requirements
 
 - Python 3.10 or newer
 - `rich` for the terminal interface
+- Tkinter for the desktop GUI (usually included with Python; some minimal Linux installations package it separately)
 
-The analysis logic uses Python's standard-library modules, including `re`, `math`, `string`, `getpass`, `unicodedata`, and `unittest`. `rich` is the only third-party dependency and is used for the visual TUI.
+The analysis logic and GUI use the Python standard library. `rich` is the only third-party Python dependency.
+
+### Optional font
+
+The GUI uses **Boldonse** for the large ZPC heading and primary button when that font is installed on your operating system. When it is not available, ZPC automatically uses a bold system font. Install Boldonse separately through your operating system's font manager to use the exact typeface.
+
+Tkinter does not provide native cross-platform background blur. The GUI creates a soft glass-like appearance using dark gradients, layered panels, highlights, and shadows instead.
 
 ## 🚀 Installation
 
-Open a terminal in the project folder and run:
+Open a terminal in the project folder and create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Activate the virtual environment:
+Activate it:
 
 **Windows PowerShell**
 
@@ -51,73 +57,61 @@ Activate the virtual environment:
 source .venv/bin/activate
 ```
 
-Install the dependency:
+Install the requirements:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-## ▶️ Run the application
+## ▶️ Run ZPC
+
+Start the interface chooser:
 
 ```bash
-python password_strength_checker.py
+python zynx_password_checker.py
 ```
 
-Choose `1` to analyze a test password. The input remains hidden while typing. Choose `Q` to exit.
-
-Run the built-in tests:
+Open the GUI directly:
 
 ```bash
-python password_strength_checker.py --self-test
+python zynx_password_checker.py --gui
 ```
 
-Display the version:
+Open the TUI directly in the current terminal:
 
 ```bash
-python password_strength_checker.py --version
+python zynx_password_checker.py --tui
+```
+
+When you choose TUI from the Windows startup chooser, ZPC closes the chooser and opens a new PowerShell window for the terminal interface. On Linux and macOS, the TUI runs in the current terminal.
+
+Other options:
+
+```bash
+python zynx_password_checker.py --self-test
+python zynx_password_checker.py --version
+python zynx_password_checker.py --help
 ```
 
 ## 🧠 How the analysis works
 
-### 1. Password length
+### 1. Password length and character categories
 
-The program measures the length of the exact input. It does not trim spaces or silently modify the password. Longer passwords generally provide more resistance to guessing, especially when they are randomly generated or consist of several unrelated words.
+ZPC counts the exact characters entered, including spaces. It detects lowercase letters, uppercase letters, digits, symbols, and whitespace. It does not trim or rewrite the submitted value before measuring it.
 
-### 2. Character categories
+### 2. Common-password and dictionary checks
 
-The checker detects these categories:
+A small built-in demonstration list checks for a few common passwords and dictionary words. The comparison uses Unicode normalization, case folding, and a limited set of predictable leetspeak substitutions. The original password is not changed, and ZPC reports only a generic finding rather than displaying the matched text.
 
-| Category | Examples |
-|---|---|
-| Lowercase | `a` to `z` |
-| Uppercase | `A` to `Z` |
-| Digits | `0` to `9` |
-| Symbols | `!`, `@`, `#`, `$` |
-| Whitespace | spaces and other whitespace characters |
+The list is intentionally small. A clean result does **not** mean a password has never appeared in a data breach or is safe against every guessing strategy.
 
-For the alphabet-pool estimate, ASCII pools are counted separately when present: 26 lowercase letters, 26 uppercase letters, 10 digits, and the characters in Python's `string.punctuation`. Whitespace adds one modeled choice. Non-ASCII categories use a rough 100-character bucket, so Unicode results are especially approximate.
+### 3. Obvious-pattern checks
 
-Character variety is displayed because it is part of this project's learning objective. It should not be treated as a requirement to mechanically add one uppercase letter, one digit, and one symbol. Length, uniqueness, blocklists, and unpredictability matter more than satisfying a predictable recipe.
+ZPC looks for repeated runs of three or more characters, familiar keyboard rows such as `qwerty`, and simple four-character ascending or descending sequences such as `abcd` or `4321`. These are basic educational heuristics, not a complete pattern detector.
 
-### 3. Common-password and dictionary detection
+### 4. Structural entropy estimate
 
-The tool compares a normalized form of the input with a small built-in list. It also extracts alphabetic tokens to identify common words in values such as a common word followed by digits. A few substitutions such as `0 → o`, `3 → e`, and `@ → a` are normalized for this check.
-
-The original password is not changed. The match result is generic; the application never prints the password or the matched text. The bundled list is intentionally small and does not contain real-time breach data, so a clean result does **not** prove that a password has never been exposed or is not guessable.
-
-### 4. Obvious-pattern detection
-
-The checker looks for:
-
-- A character repeated three or more times in a row.
-- Familiar keyboard rows such as `qwerty` or `asdf`.
-- Four-character ascending or descending sequences such as `abcd` or `4321`.
-
-These checks are deliberately simple educational heuristics. They do not cover every human password pattern.
-
-### 5. Structural entropy calculation
-
-The program uses this formula:
+The application calculates:
 
 ```text
 H = L × log₂(N)
@@ -125,74 +119,61 @@ H = L × log₂(N)
 
 Where:
 
-- `H` = estimated structural entropy in bits.
-- `L` = password length.
-- `N` = estimated number of possible characters in the alphabet pool detected in the password.
+- `H` is the estimated structural entropy in bits.
+- `L` is the entered password length.
+- `N` is the approximate character-pool size inferred from the character categories present.
 
-For example, if a password has 10 characters and the detected pool contains 62 possible characters:
+For example, a 10-character value with an estimated pool of 62 characters gives:
 
 ```text
 H = 10 × log₂(62)
 H ≈ 59.54 bits
 ```
 
-This is a **theoretical upper-bound model**. It assumes each character was selected independently and uniformly at random from the entire detected pool. A human-created password usually does not satisfy that assumption. A phrase, name, date, keyboard walk, or predictable substitution can be much easier to guess than the formula suggests. The program therefore shows dictionary and pattern warnings separately instead of pretending that one entropy number captures every attack strategy.
+This is a theoretical upper-bound model. It assumes every character was chosen independently and uniformly from the entire estimated pool. Human-created passwords often do not meet that assumption. Non-ASCII character categories use a rough 100-character bucket, so Unicode estimates are especially approximate.
 
-### 6. Crack-time estimation
+### 5. Crack-time scenarios
 
-The checker estimates the median search time using:
+ZPC estimates median search time using:
 
 ```text
 Expected guesses ≈ 2^(H - 1)
 Estimated seconds = Expected guesses / guesses_per_second
 ```
 
-It displays two configurable scenarios from constants near the top of the Python file:
+The report compares two illustrative rates:
 
-| Scenario | Default rate | Meaning |
-|---|---:|---|
-| Online / rate-limited | 10 guesses per second | A simplified online-guessing illustration. Real services should rate-limit attempts and may be much slower. |
-| Offline / fast unsalted hash | 1,000,000,000 guesses per second | A deliberately fast illustration for a weak/fast hash, not a prediction for a modern password hash. |
+| Scenario | Assumed rate |
+|---|---:|
+| Online / rate-limited | 10 guesses per second |
+| Offline / fast unsalted hash | 1,000,000,000 guesses per second |
 
-Real offline attack speed depends heavily on the hashing algorithm and its parameters, the attacker's hardware, and the attack setup. Proper password storage uses a unique salt and a deliberately expensive password-hashing scheme. The displayed time is not a promise that a password will survive for that long.
+Actual attack speeds depend on the target service, password-hashing algorithm and parameters, hardware, salts, and attack setup. The values shown are not predictions or guarantees.
 
-### 7. Educational strength score
+### 6. Educational score
 
-The 0–100 score is a transparent classroom heuristic:
+The 0–100 score is a transparent classroom heuristic. It awards points for length and character categories, then reduces the score for common-password matches and obvious patterns. It is not a recognized security standard and does not replace a password manager, unique passwords, multi-factor authentication, or secure password storage.
 
-- Most points come from password length.
-- A smaller number of points come from detected character categories.
-- Common-password/dictionary matches force the score down.
-- Obvious patterns remove points.
+## 🛡️ Security and privacy
 
-The score is not a recognized security standard and is not a substitute for a password blocklist, a password manager, multi-factor authentication, rate limiting, or secure password storage.
+- Password input is masked in both interfaces.
+- The password is analyzed locally; ZPC does not send it over the network.
+- The password is not printed, written to a file, or included in the analysis report.
+- The GUI clears its input field immediately after submission.
+- Input is limited to 1,024 characters to keep the demonstration bounded.
+- Python strings are immutable. Clearing a variable does not guarantee that the original bytes are immediately erased from process memory.
 
-## 🛡️ Security and privacy choices
+**Do not enter a real account password.** Use a temporary test value.
 
-- The password is entered through `getpass` and is not echoed to the terminal.
-- If hidden input is unavailable, the program exits rather than switching to visible input.
-- The application does not send data over the network.
-- The password is not written to a file, printed, or included in the report object.
-- The report stores only derived measurements and findings.
-- The app has a 1,024-character demonstration limit to avoid unbounded input processing.
-
-**Python memory limitation:** Deleting the local variable after analysis does not guarantee that the original string is immediately erased from process memory. Python strings are immutable and cannot be reliably zeroed by this program. Therefore, use a test password rather than a real password for an important account.
-
-## 📁 Project files
+## 📁 Project structure
 
 ```text
-password_strength_checker/
-├── password_strength_checker.py
-├── README.md
-└── requirements.txt
+EntropyCheck/
+├── zynx_password_checker.py   # Analysis logic, GUI, TUI, and built-in tests
+├── requirements.txt           # Rich terminal-interface dependency
+├── README.md                  # Setup, usage, and methodology
+├── bugs to fix.txt            # Original audit request/reference
+└── design style.txt            # Original GUI design reference
 ```
 
-## 📚 Standards note
-
-NIST SP 800-63B-4 (July 2025) emphasizes password length and blocklists of commonly used, expected, or compromised passwords. It specifies a 15-character minimum for passwords used as a single authentication factor, permits a lower minimum in some MFA contexts, and advises against additional composition rules such as requiring a mix of character types. This project displays character variety for educational entropy calculations, but it does not present composition rules as a current best-practice requirement.
-
-Official reference: [NIST SP 800-63B-4 — Authentication and Authenticator Management](https://pages.nist.gov/800-63-4/sp800-63b.html)
-
----
-
-**Project purpose:** Demonstrate password hygiene concepts, basic Python modules, regular expressions, information-theory-style calculations, terminal UI design, and defensive security awareness.
+ZPC intentionally keeps the application in one Python file. The GUI and TUI call the same analysis functions, so the two interfaces use the same scoring and detection logic.

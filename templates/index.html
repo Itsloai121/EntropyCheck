@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZPC · Zynx Password Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Boldonse&family=Poppins:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'BoldonseLocal';src:local('Boldonse'),local('Boldonse Regular'),url('Boldonse-Regular.ttf');font-display:swap}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:160deg}
+@property --x1{syntax:'<percentage>';inherits:false;initial-value:18%}
+@property --y1{syntax:'<percentage>';inherits:false;initial-value:22%}
+@property --x2{syntax:'<percentage>';inherits:false;initial-value:82%}
+@property --y2{syntax:'<percentage>';inherits:false;initial-value:78%}
+@property --x3{syntax:'<percentage>';inherits:false;initial-value:62%}
+@property --y3{syntax:'<percentage>';inherits:false;initial-value:14%}
+@property --p{syntax:'<number>';inherits:true;initial-value:0}
+:root{--bd:'Boldonse','BoldonseLocal','Arial Black',Impact,sans-serif;--th:'Poppins','Segoe UI',system-ui,sans-serif;--pu:#8b3dff;--lv:#c9a2ff}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:linear-gradient(var(--ang),#000 0%,#06030b 50%,#170930 100%) fixed;color:#fff;font:300 1rem/1.6 var(--th);overflow-x:hidden;animation:ang 26s ease-in-out infinite alternate}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;background:
+ radial-gradient(42% 42% at var(--x1) var(--y1),rgba(124,58,237,.46),transparent 70%),
+ radial-gradient(38% 38% at var(--x2) var(--y2),rgba(168,85,247,.34),transparent 70%),
+ radial-gradient(26% 26% at var(--x3) var(--y3),rgba(255,255,255,.09),transparent 70%);
+ animation:b1 17s ease-in-out infinite alternate,b2 23s ease-in-out infinite alternate,b3 29s ease-in-out infinite alternate,hue 19s ease-in-out infinite alternate}
+@keyframes b1{to{--x1:72%;--y1:62%}}
+@keyframes b2{to{--x2:22%;--y2:24%}}
+@keyframes b3{to{--x3:28%;--y3:82%}}
+@keyframes hue{from{filter:hue-rotate(-28deg)}to{filter:hue-rotate(28deg)}}
+@keyframes ang{to{--ang:215deg}}
+
+.view{display:none;min-height:100vh;padding:3rem 1.25rem;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.6rem}
+.view.on{display:flex;animation:in .9s ease both}
+@keyframes in{from{opacity:0;filter:blur(12px);transform:translateY(14px)}to{opacity:1;filter:none;transform:none}}
+#v-home,#v-results{justify-content:flex-start;padding-top:clamp(2rem,8vh,6rem)}
+
+.logo{font:400 clamp(4rem,17vw,10.5rem)/1.5 var(--bd);margin:-1.2rem 0 -1.6rem;background:linear-gradient(180deg,#fff 8%,#dcc0ff 42%,#7a2cf0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 14px 40px rgba(139,61,255,.5))}
+.sub{font-weight:200;font-size:.9rem;letter-spacing:.4em;color:rgba(255,255,255,.78);margin-bottom:1.2rem}
+
+/* floating + shadow */
+.fl{display:inline-block;border-radius:999px;animation:float 6s ease-in-out infinite}
+.fl.b{animation-duration:5s;animation-delay:-2s}
+@keyframes float{
+ 0%,100%{transform:translateY(0);box-shadow:0 18px 40px -8px rgba(124,58,237,.5),0 40px 80px -20px rgba(0,0,0,.95)}
+ 50%{transform:translateY(-12px);box-shadow:0 34px 60px -10px rgba(124,58,237,.28),0 62px 90px -26px rgba(0,0,0,.95)}}
+.glass,.card{background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(139,61,255,.09));-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.glass{transition:background .4s}
+.glass:focus-within{background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(139,61,255,.2))}
+#password{width:min(440px,84vw);background:none;border:0;outline:0;color:#fff;font:300 1rem var(--th);letter-spacing:.2em;text-align:center;padding:1.15rem 1.6rem}
+#password::placeholder{letter-spacing:.12em;color:rgba(255,255,255,.42)}
+
+.btn{position:relative;overflow:hidden;border:0;cursor:pointer;color:#fff;font:400 .8rem var(--bd);padding:1.05rem 2.7rem;border-radius:999px;background:linear-gradient(135deg,#4c1d95,#8b3dff 55%,#c9a2ff);transition:transform .35s cubic-bezier(.34,1.56,.64,1),filter .3s}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-120%);transition:transform .8s}
+.btn:hover{transform:scale(1.08);filter:brightness(1.12)}
+.btn:hover::after{transform:translateX(120%)}
+.btn:active{transform:scale(.96)}
+.btn:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.btn.w{background:linear-gradient(135deg,#fff,#e6d6ff 60%,#b98cff);color:#14072a}
+
+.card{border-radius:26px;padding:1.4rem 1.5rem;text-align:left}
+h2{font:400 clamp(1rem,3.4vw,1.4rem)/1.7 var(--bd)}
+h3{font:400 .7rem/1.7 var(--bd);color:var(--lv);margin-bottom:.6rem}
+.t{font-weight:200;letter-spacing:.12em;color:rgba(255,255,255,.75)}
+.mode{text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.3rem;padding:2.4rem 2.2rem;width:min(480px,100%)}
+.row{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;padding:.6rem 0 1rem}
+
+/* loading */
+.lbox{width:min(300px,78vw);height:92px;border-radius:30px;position:relative;overflow:hidden;background:rgba(255,255,255,.05);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);animation-duration:5.5s}
+.lbox::before{content:"";position:absolute;top:-40%;bottom:-40%;width:55%;left:-60%;background:linear-gradient(90deg,transparent,rgba(139,61,255,.9),#fff,rgba(139,61,255,.9),transparent);filter:blur(22px);animation:sweep 2.4s ease-in-out infinite alternate}
+@keyframes sweep{to{left:110%}}
+.mw{margin-top:1.2rem;animation:bob 4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-7px)}}
+#msg{font:200 .95rem/1.7 var(--th);letter-spacing:.22em;color:rgba(255,255,255,.88);min-height:1.7em;transition:opacity .4s ease,filter .4s ease,transform .4s ease}
+#msg.out{opacity:0;filter:blur(9px);transform:scale(.98)}
+
+/* results */
+.ring{--t:0;position:relative;width:210px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);box-shadow:0 0 70px -10px rgba(139,61,255,.55);animation:fill 1.8s cubic-bezier(.2,.7,.2,1) .3s both}
+.ring::after{content:"";position:absolute;inset:14px;border-radius:50%;background:#07040d}
+.ring b{position:relative;z-index:1;font:400 1.25rem var(--bd);white-space:nowrap}
+.arc,.hd{position:absolute;inset:0;border-radius:50%}
+/* progress arc: same colour at both ends, so a full ring has no seam */
+.arc{background:conic-gradient(#8b3dff 0,#5b21b6 calc(var(--p)*.5%),#8b3dff calc(var(--p)*1%),transparent calc(var(--p)*1%))}
+/* soft light line that sits on the arc's head and fades into a tail */
+.hd{opacity:calc(var(--p)*.2);transform:rotate(calc(var(--p)*3.6deg));filter:blur(2.5px);background:conic-gradient(#fff 0deg,rgba(255,255,255,0) 7deg,rgba(255,255,255,0) 285deg,rgba(201,162,255,.6) 335deg,#fff 360deg)}
+/* 100/100: once filled, keep spinning */
+.ring.full .arc{animation:spin 8s linear 2.1s infinite}
+.ring.full .hd{animation:spin 2.6s linear 2.1s infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes fill{from{--p:0}to{--p:var(--t)}}
+.pill{font:400 1rem var(--bd);padding:.7rem 1.7rem;border-radius:999px;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(139,61,255,.3))}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem;width:min(920px,100%)}
+.v{font-size:1.5rem;font-weight:300;line-height:1.35}
+.body{font-size:.95rem;line-height:1.7;color:rgba(255,255,255,.88)}
+.list p{position:relative;padding-left:1.1rem;margin:.45rem 0}
+.list p::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,#fff,#a855f7)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.45rem 1.1rem}
+.kv span{color:rgba(255,255,255,.6)}.kv b{font-weight:400;text-align:right;overflow-wrap:anywhere}
+/* result boards */
+.wide{grid-column:1/-1}
+.sum{font-size:1.05rem;line-height:1.9;color:rgba(255,255,255,.92);max-width:72ch}
+.pfs{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.6rem 2.2rem}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.55rem}
+.ph span{font-weight:400}.ph b{font:400 .7rem var(--bd)}
+.mt{height:8px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden}
+.mt i{display:block;height:100%;width:var(--w);border-radius:9px;background:linear-gradient(90deg,#5b21b6,#a855f7 60%,#fff);animation:grow 1.3s cubic-bezier(.2,.7,.2,1) .5s both}
+@keyframes grow{from{width:0}}
+.pf p{margin-top:.6rem;font-size:.9rem;line-height:1.65;color:rgba(255,255,255,.72)}
+.l0 b{color:#ff9bb8}.l0 .mt i{background:linear-gradient(90deg,#7f1d4a,#ff7aa2)}.l1 b{color:#e0b8ff}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.9rem}
+.tile{padding:1rem 1.1rem;border-radius:18px;background:rgba(255,255,255,.05)}
+.tile.s{background:rgba(139,61,255,.14)}.tile.off{opacity:.42}
+.tile b{display:block;font:400 1.2rem/1.5 var(--bd)}
+.tile span{display:block;font-size:.85rem;color:rgba(255,255,255,.85)}
+.tile small{display:block;font-size:.75rem;color:rgba(255,255,255,.5)}
+.scen{display:grid;gap:.8rem}
+.sc{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem 1.5rem;padding:1rem 1.2rem;border-radius:18px;background:rgba(255,255,255,.05)}
+.sc div{flex:1 1 240px}.sc span{display:block;font-weight:400}
+.sc small{display:block;font-size:.82rem;line-height:1.5;color:rgba(255,255,255,.6)}
+.sc b{font:300 1.15rem var(--th);text-align:right}
+.note{margin-top:1rem;font-size:.85rem;color:rgba(255,255,255,.6)}
+@media(prefers-reduced-motion:reduce){.fl,.mw,body,body::before,.ring.full .arc,.ring.full .hd{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- 1. GUI or TUI -->
+<section id="v-mode" class="view on">
+  <div class="card mode">
+    <h2>Choose your space</h2>
+    <p class="t">Stay in this window, or switch to PowerShell?</p>
+    <div class="row">
+      <div class="fl"><button class="btn" onclick="chooseMode('gui')">GUI</button></div>
+      <div class="fl b"><button class="btn w" onclick="chooseMode('tui')">TUI</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Home -->
+<section id="v-home" class="view">
+  <h1 class="logo">ZPC</h1>
+  <p class="sub">Zynx Password Checker</p>
+  <div class="fl glass"><input id="password" type="password" placeholder="Type a password" autocomplete="off" spellcheck="false"></div>
+  <div class="fl b"><button class="btn" onclick="analyzePassword()">Enter</button></div>
+</section>
+
+<!-- 3. Loading -->
+<section id="v-load" class="view">
+  <div class="fl lbox"></div>
+  <div class="mw"><p id="msg"></p></div>
+</section>
+
+<!-- 4. Results -->
+<section id="v-results" class="view">
+  <h2>Your analysis</h2>
+  <div class="ring" id="ring"><i class="arc"></i><i class="hd"></i><b id="score">0/100</b></div>
+  <div class="pill" id="grade">–</div>
+  <div class="grid"><div class="card wide"><h3>Analysis summary</h3><p class="sum" id="summary"></p></div></div>
+  <div class="grid">
+    <div class="card"><h3>Entropy</h3><p class="v" id="entropy">–</p></div>
+    <div class="card"><h3>Online crack time</h3><p class="v" id="online-time">–</p></div>
+    <div class="card"><h3>Offline crack time</h3><p class="v" id="offline-time">–</p></div>
+  </div>
+  <div class="grid">
+    <div class="card wide"><h3>Performance analysis</h3><p class="t" style="margin-bottom:1.2rem">In plain words: how your password holds up</p><div class="pfs" id="perf"></div></div>
+    <div class="card wide"><h3>Character categories</h3><div class="cats" id="cats"></div></div>
+    <div class="card wide"><h3>Illustrative crack-time scenarios</h3><div class="scen" id="scen"></div><p class="note" id="scen-note"></p></div>
+  </div>
+  <div class="grid" id="extras"></div>
+  <div class="grid"><div class="card wide"><h3>Important limitations</h3><div class="body list" id="lims"></div></div></div>
+  <div class="fl b" style="margin-top:1rem"><button class="btn w" onclick="again()">Check another</button></div>
+</section>
+
+<!-- 5. TUI hand-off -->
+<section id="v-tui" class="view">
+  <h2>Opening the TUI</h2>
+  <p class="t" id="tui-note">Closing the GUI and starting PowerShell…</p>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const MIN_LOAD = 4200; // minimum loading time (ms) so the messages get to shine
+const MSGS = [
+  "Warming up the vault…",
+  "Listening to every little character",
+  "Counting all the possibilities",
+  "Asking the stars about your password",
+  "Weighing each symbol with care",
+  "Imagining a very patient hacker",
+  "Folding the numbers into something pretty",
+  "Almost there, take a soft breath"
+];
+let tick, busy = false;
+
+function show(id) {
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === id));
+  scrollTo(0, 0);
+}
+
+/* ---- GUI / TUI ---- */
+async function chooseMode(mode) {
+  if (mode === "gui") { show("v-home"); setTimeout(() => $("password").focus(), 500); return; }
+  show("v-tui");
+  try {
+    const r = await fetch("/api/launch-tui", { method: "POST" });
+    if (!r.ok) throw new Error();
+    $("tui-note").textContent = "PowerShell is opening. You can close this tab.";
+  } catch {
+    $("tui-note").textContent = "The backend didn’t respond. Start the TUI from PowerShell instead.";
+  }
+  window.close();
+}
+
+/* ---- loading ---- */
+function startLoading() {
+  let i = 0; const m = $("msg");
+  m.textContent = MSGS[0]; m.classList.remove("out");
+  show("v-load");
+  tick = setInterval(() => {
+    m.classList.add("out");
+    setTimeout(() => { m.textContent = MSGS[++i % MSGS.length]; m.classList.remove("out"); }, 400);
+  }, 1000);
+}
+const stopLoading = () => clearInterval(tick);
+
+/* ---- results rendering ---- */
+const txt = v => v == null ? "None found ✓" : typeof v === "boolean" ? (v ? "Yes" : "No") : (v && typeof v === "object") ? JSON.stringify(v) : String(v);
+const nice = k => { k = k.replace(/_/g, " "); return k[0].toUpperCase() + k.slice(1); };
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+// Any extra fields your API returns (feedback, warnings, checks…) are shown automatically.
+function renderExtras(r) {
+  const box = $("extras"); box.replaceChildren();
+  const skip = ["score", "grade", "entropy_bits", "crack_time", "character_classes", "length", "pool_size", "uses_unicode", "summary", "limitations", "scenarios"];
+  Object.entries(r).filter(([k]) => !skip.includes(k)).forEach(([k, v]) => {
+    const card = el("div", "card"), body = el("div", "body");
+    card.append(el("h3", "", nice(k)));
+    if (Array.isArray(v)) {
+      if (!v.length) body.textContent = "Nothing to report ✓";
+      else { body.className = "body list"; v.forEach(x => body.append(el("p", "", txt(x)))); }
+    } else if (v && typeof v === "object") {
+      body.className = "body kv";
+      Object.entries(v).forEach(([a, b]) => body.append(el("span", "", nice(a)), el("b", "", txt(b))));
+    } else body.textContent = txt(v);
+    card.append(body); box.append(card);
+  });
+}
+
+/* ---- boards: summary, performance, categories, scenarios, limitations ---- */
+const CATS = [["lower", "Lowercase letters", /[a-z]/g], ["upper", "Uppercase letters", /[A-Z]/g], ["digit", "Digits", /\d/g], ["symbol", "Symbols", /[!-\/:-@\[-`{-~]/g], ["space", "Spaces", /\s/g], ["other", "Unicode characters", /[^\x00-\x7f]/g]];
+const catCounts = pw => Object.fromEntries(CATS.map(([k, , re]) => [k, (pw.match(re) || []).length]));
+const LV = ["Weak", "Fair", "Strong", "Excellent"], PCT = [18, 45, 75, 100];
+const LIMS = [
+  "These are estimates, not guarantees. The score comes from length and character variety.",
+  "Crack times are illustrative. Real speed depends on how a service stores passwords and on the attacker’s hardware.",
+  "Attackers try common words, names and leaked passwords first, so a random-looking password can still be weak.",
+  "A score can’t tell you whether this password has leaked or is reused on other accounts.",
+  "Use a unique password for every account, a password manager and two-factor authentication."
+];
+// Assumed guessing speeds for the scenarios. Edit these to match your backend.
+const SPEEDS = [
+  ["Online, rate-limited", "A website that slows down guessers", "100 guesses per hour", 100 / 3600],
+  ["Online, no limits", "A login page with no lockout", "1,000 guesses per second", 1e3],
+  ["Offline, slow hashing", "Stolen data protected by bcrypt or Argon2", "10,000 guesses per second", 1e4],
+  ["Offline, fast hashing", "Stolen data with weak hashing, one GPU", "10 billion guesses per second", 1e10],
+  ["Offline, cracking rig", "A large cluster of GPUs", "1 trillion guesses per second", 1e12]
+];
+function yrs(t) { // "about 3.17e+33 billion years" -> years as a number
+  t = String(t).toLowerCase();
+  const m = t.match(/[\d.]+(?:e[+-]?\d+)?/);
+  if (!m) return /instant/.test(t) ? 0 : /thousand|million|billion|trillion/.test(t) ? 1e6 : null;
+  let n = parseFloat(m[0]);
+  for (const [w, k] of [["thousand", 1e3], ["million", 1e6], ["billion", 1e9], ["trillion", 1e12]]) if (t.includes(w)) n *= k;
+  const u = [["year", 1], ["month", 1 / 12], ["week", 1 / 52], ["day", 1 / 365], ["hour", 1 / 8760], ["minute", 1 / 525600], ["second", 1 / 31536000]].find(([w]) => t.includes(w));
+  return u ? n * u[1] : null;
+}
+function speak(t) { // [level 0-3, plain-language phrase]
+  const y = yrs(t);
+  if (y === null) return [2, "has an estimated crack time of " + t];
+  if (y < 1 / 365) return [0, "could be cracked in under a day"];
+  if (y < 1) return [0, "could be cracked within a year"];
+  if (y < 100) return [1, "might be cracked within a lifetime"];
+  if (y < 1e6) return [2, "would take centuries or longer to crack"];
+  if (y < 1.38e10) return [3, "would take millions to billions of years to crack"];
+  return [3, "would take longer than the universe has existed to crack"];
+}
+function perfRows(r, pw, n, ct) {
+  const len = r.length ?? pw.length, bits = +r.entropy_bits || 0;
+  const kinds = ["lower", "upper", "digit", "symbol"].filter(k => n[k]).length;
+  const warn = Array.isArray(r.pattern_warnings) ? r.pattern_warnings.length : 0;
+  const rows = [
+    ["Length", len >= 16 ? 3 : len >= 12 ? 2 : len >= 8 ? 1 : 0, `${len} characters. ` + (len >= 16 ? "Nice and long. Length is the easiest way to add strength." : "Longer is stronger. Aim for 16 or more.")],
+    ["Variety", Math.max(0, kinds - 1), `${kinds} of 4 character types used. ` + (kinds === 4 ? "A good mix." : "Adding the missing types makes guessing harder.")],
+    ["Guessability", bits >= 100 ? 3 : bits >= 64 ? 2 : bits >= 40 ? 1 : 0, `${bits} bits of entropy. That’s like guessing ${Math.floor(bits)} coin flips in a row.`],
+    r.common_match ? ["Predictability", 0, "It matches a common password or pattern."]
+      : warn ? ["Predictability", 1, `${warn} pattern warning${warn > 1 ? "s" : ""} found.`]
+      : ["Predictability", 3, "No common words or patterns spotted."]
+  ];
+  [["online", "Online guessing", "Trying passwords on a login page"], ["offline", "Offline cracking", "If stolen data is cracked offline"]].forEach(([k, nm, lead]) => {
+    if (ct[k] == null) return;
+    const [lv, ph] = speak(ct[k]);
+    rows.push([nm, lv, `${lead}: your password ${ph} (${ct[k]}).`]);
+  });
+  return rows;
+}
+function perfRow([name, lvl, text]) {
+  const d = el("div", "pf l" + lvl), h = el("div", "ph"), m = el("div", "mt"), i = el("i");
+  i.style.setProperty("--w", PCT[lvl] + "%"); m.append(i);
+  h.append(el("span", "", name), el("b", "", LV[lvl]));
+  d.append(h, m, el("p", "", text));
+  return d;
+}
+function renderAll(r, pw) {
+  const ct = r.crack_time || {}, n = catCounts(pw), bits = +r.entropy_bits || 0;
+  const used = CATS.filter(([k]) => n[k]).map(c => c[1].toLowerCase());
+  const list = a => a.length > 1 ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0] || "no standard character types";
+  const warn = Array.isArray(r.pattern_warnings) ? r.pattern_warnings.length : 0;
+
+  // Analysis summary
+  $("summary").textContent = r.summary ? txt(r.summary) : [
+    `Your ${pw.length}-character password scored ${r.score}/100 and is rated ${String(r.grade).toLowerCase()}.`,
+    `It uses ${list(used)}${r.pool_size ? ", from a pool of " + r.pool_size + " possible characters" : ""}, which gives about ${r.entropy_bits} bits of entropy.`,
+    r.common_match ? "It matches a common password, which makes it much easier to guess." : warn ? `${warn} pattern warning${warn > 1 ? "s were" : " was"} found.` : "No common passwords or obvious patterns were found.",
+    ct.offline != null ? `In a fast offline attack, it ${speak(ct.offline)[1]}.` : ""
+  ].join(" ");
+
+  // Performance analysis
+  $("perf").replaceChildren(...perfRows(r, pw, n, ct).map(perfRow));
+
+  // Character categories
+  const tiles = CATS.map(([k, nm]) => {
+    const c = n[k], t = el("div", "tile" + (c ? "" : " off"));
+    t.append(el("b", "", c), el("span", "", nm), el("small", "", c ? Math.round(c / pw.length * 100) + "% of the password" : "Not used"));
+    return t;
+  });
+  [["Length", r.length ?? pw.length], ["Pool size", r.pool_size]].filter(([, v]) => v != null).forEach(([nm, v]) => {
+    const t = el("div", "tile s"); t.append(el("b", "", v), el("span", "", nm)); tiles.push(t);
+  });
+  $("cats").replaceChildren(...tiles);
+
+  // Crack-time scenarios (uses your API's own scenarios if it sends them)
+  const extra = r.scenarios && typeof r.scenarios === "object" && !Array.isArray(r.scenarios) ? r.scenarios
+    : Object.fromEntries(Object.entries(ct).filter(([k]) => k !== "online" && k !== "offline"));
+  const own = Object.entries(extra);
+  const rows = own.length ? own.map(([k, v]) => [nice(k), "", txt(v)])
+    : SPEEDS.map(([nm, d, sp, rate]) => [nm, `${d}. Assumes ${sp}.`, human(2 ** (bits - 1) / rate)]);
+  $("scen").replaceChildren(...rows.map(([nm, d, tm]) => {
+    const row = el("div", "sc"), l = el("div");
+    l.append(el("span", "", nm)); if (d) l.append(el("small", "", d));
+    row.append(l, el("b", "", tm));
+    return row;
+  }));
+  $("scen-note").textContent = own.length ? "Illustrative estimates from the analysis."
+    : "Illustrative only. These assume pure random guessing at the speeds shown; real attackers try likely passwords first.";
+
+  // Important limitations
+  $("lims").replaceChildren(...(r.limitations ? [].concat(r.limitations).map(txt) : LIMS).map(x => el("p", "", x)));
+}
+
+/* ---- demo data (only when the file is opened directly, without a backend) ---- */
+function human(s) {
+  if (!isFinite(s)) return "Effectively never";
+  if (s < 1) return "Instantly";
+  let v = s;
+  for (const [n, d] of [["second", 60], ["minute", 60], ["hour", 24], ["day", 365]]) {
+    if (v < d) { v = Math.round(v); return v + " " + n + (v == 1 ? "" : "s"); }
+    v /= d;
+  }
+  if (v < 1e3) return Math.round(v) + " years";
+  if (v < 1e6) return Math.round(v / 1e3) + " thousand years";
+  if (v < 1e9) return Math.round(v / 1e6) + " million years";
+  if (v < 1e12) return Math.round(v / 1e9) + " billion years";
+  return "about " + v.toExponential(2) + " years";
+}
+function demo(p) {
+  const pool = (/[a-z]/.test(p) ? 26 : 0) + (/[A-Z]/.test(p) ? 26 : 0) + (/\d/.test(p) ? 10 : 0) + (/[^A-Za-z0-9]/.test(p) ? 33 : 0);
+  const bits = Math.round(p.length * Math.log2(pool || 1) * 10) / 10, score = Math.min(100, Math.round(bits * 0.9));
+  return {
+    score, entropy_bits: bits,
+    grade: score >= 90 ? "A+" : score >= 75 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : score >= 20 ? "D" : "F",
+    crack_time: { online: human(2 ** bits / 2 / 1e3), offline: human(2 ** bits / 2 / 1e10) },
+    suggestions: [p.length < 12 && "Use 12 or more characters", !/[A-Z]/.test(p) && "Add uppercase letters", !/\d/.test(p) && "Add numbers", !/[^A-Za-z0-9]/.test(p) && "Add symbols"].filter(Boolean),
+    mode: "Demo preview (no backend connected)"
+  };
+}
+
+/* ---- your analyzer, wired into the loading + results views ---- */
+async function analyzePassword() {
+
+    const password = document.getElementById("password").value;
+    if (!password) { $("password").placeholder = "Type a password first"; $("password").focus(); return; }
+    if (busy) return;
+    busy = true;
+    startLoading();
+
+    try {
+
+        const request = location.protocol === "file:"
+            ? Promise.resolve({ ok: true, json: async () => demo(password) })
+            : fetch("/api/analyze", {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    password: password
+                })
+            });
+
+        const [response] = await Promise.all([request, wait(MIN_LOAD)]);
+
+        const results = await response.json();
+
+        if (!response.ok) {
+            throw new Error(results.error || "Analysis failed.");
+        }
+
+        console.log(results);
+
+        // Update your GUI with the returned results.
+        document.getElementById("score").textContent =
+            results.score + "/100";
+
+        document.getElementById("grade").textContent =
+            results.grade;
+
+        document.getElementById("entropy").textContent =
+            results.entropy_bits + " bits";
+
+        document.getElementById("online-time").textContent =
+            results.crack_time.online;
+
+        document.getElementById("offline-time").textContent =
+            results.crack_time.offline;
+
+        $("ring").style.setProperty("--t", Math.max(0, Math.min(100, +results.score || 0)));
+        $("ring").classList.toggle("full", (+results.score || 0) >= 100);
+        try { renderAll(results, password); } catch (e) { console.error(e); }
+        renderExtras(results);
+        stopLoading();
+        show("v-results");
+
+    } catch (error) {
+
+        console.error(error);
+        stopLoading();
+        show("v-home");
+        setTimeout(() => alert(error.message), 60);
+
+    } finally {
+        busy = false;
+    }
+}
+
+function again() { $("password").value = ""; $("password").placeholder = "Type a password"; show("v-home"); setTimeout(() => $("password").focus(), 500); }
+$("password").addEventListener("keydown", e => { if (e.key === "Enter") analyzePassword(); });
+</script>
+</body>
+</html>

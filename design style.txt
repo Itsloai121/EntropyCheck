@@ -1,0 +1,30 @@
+need the GUI design style under those conditions:
+
+
+colors: black, purple, white (all of them with gradient way)
+	need the black to be the dominant color
+	purple be the secondary color 
+	white be the accent color
+font style used: Boldonse 
+
+
+top middle add "ZPC" in a main bold huge size text
+add under the "ZPC" text "Zynx Password Checker" in a small thin font size
+
+
+need a text box, borderless transparent blur and also have loop soft floating animation with shadow in the background
+need a button under the text box "Enter" border less with pop out soft and loop floating animations, with shadow in the background
+
+
+need when the user enter the GUI, it ask the user if they want to be in the GUI or the TUI, and if the TUI automatically shut down the GUI and open the powershell on the TUI design 
+
+and if they want to stay on the GUI, let them continue with the GUI interface
+
+
+
+when the user inter the password, i need it to make a beautiful soft smooth loading box with a beautiful lovely messages under the loading box that changes in a loop every second with text have a soft floating loop animation and text supposed to be in a thin small font style
+and also make the transition from the first sentence to the other a fade in and out transition, make it smooth and blury and soft too
+
+
+
+when the process finish, i need the tool to organize the full process analysis result in a beautiful organized way in the GUI so it look easy simple to read, and also soft and beautiful for the eyes

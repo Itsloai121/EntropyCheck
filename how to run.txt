@@ -1,0 +1,8 @@
+Install dependencies:
+
+python -m pip install -r requirements.txt
+
+
+Start the website:
+
+python app.py

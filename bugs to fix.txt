@@ -1,0 +1,4 @@
+logic errors
+vulnerabilities 
+design flaws and logic design errors
+connections between the python files and each other
